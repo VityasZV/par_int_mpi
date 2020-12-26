@@ -1,0 +1,1 @@
+mpicxx   -std=c++11 -fopenmp   CMakeFiles/p_i.dir/parralel_integral_mpi.cpp.o CMakeFiles/p_i.dir/parralel_integral.cpp.o CMakeFiles/p_i.dir/mpi_info.cpp.o  -o p_i 
