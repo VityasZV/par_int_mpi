@@ -2,12 +2,14 @@
 
 #include "mpi_info.hpp"
 #include <mpi.h>
+#include <mpi-ext.h>
 #include <omp.h>
 
 #include <iostream>
 #include <cmath>
 #include <stdio.h>
 #include <cstdlib>
+#include <signal.h>
 
 namespace parallel_integral {
 
@@ -37,6 +39,43 @@ namespace parallel_integral {
 
     } //namespace
 
+        
+    static void verbose_errhandler(MPI_Comm * com, int *er, ...) {
+        MPI_Comm comm = *com;
+        int err = *er;
+        char errstr[MPI_MAX_ERROR_STRING];
+        int i, rank, size, nf, len, eclass;
+        MPI_Group group_c, group_f;
+        int *ranks_gc, *ranks_gf;
+
+        MPI_Error_class(err, &eclass);
+        if (MPIX_ERR_PROC_FAILED != eclass) {
+            MPI_Abort(comm, err);
+        }
+        MPI_Comm_rank(comm, &rank);
+        MPI_Comm_size(comm, &size);
+        MPIX_Comm_failure_ack(comm);
+        MPIX_Comm_failure_get_acked(comm, &group_f);
+        MPI_Group_size(group_f, &nf);
+        MPI_Error_string(err, errstr, &len);
+        printf("Rank %d / %d : Notified of error %s. %d found dead :(", rank, size, errstr, nf);
+
+        ranks_gf = (int *)malloc(nf * sizeof(int));
+        ranks_gc = (int *)malloc(nf * sizeof(int));
+        MPI_Comm_group(comm, &group_c);
+        for (int i = 0; i < nf; ++i) {
+            ranks_gf[i] = i;
+        }
+        MPI_Group_translate_ranks(group_f, nf, ranks_gf, group_c, ranks_gc);
+        for (int i = 0; i < nf; i++) {
+            printf("%d ", ranks_gc[i]);
+        }
+        printf("}\n");
+        free(ranks_gf);
+        free(ranks_gc);
+
+    }
+
     Limits::Limits(std::ifstream& input_file) {
         input_file.open("input.txt");
         input_file >> left >> right;
@@ -48,6 +87,7 @@ namespace parallel_integral {
         AccuracyParameters accuracy_parameters(input_file);
         double previous_result = 0, result = 0;
         unsigned long i = 0;
+        MPI_Errhandler errh;
         mpi_info::MPI mpi_statistics(argc_ptr, argv_ptr);
         double mpi_time = MPI_Wtime();
         if (mpi_statistics.ierr != MPI_SUCCESS) {
@@ -61,6 +101,8 @@ namespace parallel_integral {
         //  Get the individual process ID.
         //
         mpi_statistics.ierr = MPI_Comm_rank(MPI_COMM_WORLD, &mpi_statistics.process_id);
+        MPI_Comm_create_errhandler(verbose_errhandler, &errh);
+        MPI_Comm_set_errhandler(MPI_COMM_WORLD, errh);
         /*
             Giving pieces from accuracy_parameters.parts for each process,
             and then in for-cycle each process is using threads for computation of sum. 
@@ -96,6 +138,9 @@ namespace parallel_integral {
                 }
             }
             if (mpi_statistics.process_id != 0){
+                if (mpi_statistics.process_id == 1) {
+                    raise(SIGKILL);
+                }
                 //std::cout << "PROCESS: "<<mpi_statistics.process_id << "sending result: " <<result_in_process<< " to master" << std::endl;
                 MPI_Send(&result_in_process, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD); //sending result to master
             }

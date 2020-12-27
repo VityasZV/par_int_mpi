@@ -40,6 +40,7 @@ CMakeFiles/p_i.dir/mpi_info.cpp.o: /usr/lib/x86_64-linux-gnu/openmpi/include/ope
 CMakeFiles/p_i.dir/parralel_integral.cpp.o: ../mpi_info.hpp
 CMakeFiles/p_i.dir/parralel_integral.cpp.o: ../parralel_integral.cpp
 CMakeFiles/p_i.dir/parralel_integral.cpp.o: ../parralel_integral.hpp
+CMakeFiles/p_i.dir/parralel_integral.cpp.o: /usr/lib/x86_64-linux-gnu/openmpi/include/mpi-ext.h
 CMakeFiles/p_i.dir/parralel_integral.cpp.o: /usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h
 CMakeFiles/p_i.dir/parralel_integral.cpp.o: /usr/lib/x86_64-linux-gnu/openmpi/include/mpi_portable_platform.h
 CMakeFiles/p_i.dir/parralel_integral.cpp.o: /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpi/cxx/comm.h
@@ -73,6 +74,8 @@ CMakeFiles/p_i.dir/parralel_integral.cpp.o: /usr/lib/x86_64-linux-gnu/openmpi/in
 CMakeFiles/p_i.dir/parralel_integral.cpp.o: /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpi/cxx/topology_inln.h
 CMakeFiles/p_i.dir/parralel_integral.cpp.o: /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpi/cxx/win.h
 CMakeFiles/p_i.dir/parralel_integral.cpp.o: /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpi/cxx/win_inln.h
+CMakeFiles/p_i.dir/parralel_integral.cpp.o: /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpiext/affinity/c/mpiext_affinity_c.h
+CMakeFiles/p_i.dir/parralel_integral.cpp.o: /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpiext/cuda/c/mpiext_cuda_c.h
 
 CMakeFiles/p_i.dir/parralel_integral_mpi.cpp.o: ../parralel_integral.hpp
 CMakeFiles/p_i.dir/parralel_integral_mpi.cpp.o: ../parralel_integral_mpi.cpp

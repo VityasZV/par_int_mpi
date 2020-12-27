@@ -21,6 +21,8 @@ mpi_info.hpp
 /home/parallels/WORK/Skipod4/par_int_mpi/mpi_info.hpp
 mpi.h
 -
+mpi-ext.h
+-
 omp.h
 -
 iostream
@@ -30,6 +32,8 @@ cmath
 stdio.h
 -
 cstdlib
+-
+signal.h
 -
 
 /home/parallels/WORK/Skipod4/par_int_mpi/parralel_integral.hpp
@@ -45,6 +49,12 @@ ctime
 -
 mpi.h
 -
+
+/usr/lib/x86_64-linux-gnu/openmpi/include/mpi-ext.h
+openmpi/ompi/mpiext/affinity/c/mpiext_affinity_c.h
+/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpiext/affinity/c/mpiext_affinity_c.h
+openmpi/ompi/mpiext/cuda/c/mpiext_cuda_c.h
+/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpiext/cuda/c/mpiext_cuda_c.h
 
 /usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h
 stddef.h
@@ -267,4 +277,8 @@ openmpi/ompi/mpi/cxx/file_inln.h
 /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpi/cxx/win.h
 
 /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpi/cxx/win_inln.h
+
+/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpiext/affinity/c/mpiext_affinity_c.h
+
+/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpiext/cuda/c/mpiext_cuda_c.h
 
