@@ -9,5 +9,6 @@ namespace mpi_info {
     MPI::~MPI(){
         //nothing
     }
+    int MPI::amount_of_processes;
 }// mpi_info
 	

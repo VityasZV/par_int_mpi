@@ -14,7 +14,7 @@
 namespace parallel_integral {
 
     namespace {
-        static const double kAccuracy = 0.000001;
+        static const double kAccuracy = 0.001;
 
         double Function(const double& arg) {
             return 3*std::pow(arg, -1) + 2;
@@ -49,16 +49,17 @@ namespace parallel_integral {
         int *ranks_gc, *ranks_gf;
 
         MPI_Error_class(err, &eclass);
-        if (MPIX_ERR_PROC_FAILED != eclass) {
-            MPI_Abort(comm, err);
-        }
+        // if (MPIX_ERR_PROC_FAILED != eclass) {
+        //     MPI_Abort(comm, err);
+        // }
         MPI_Comm_rank(comm, &rank);
         MPI_Comm_size(comm, &size);
-        MPIX_Comm_failure_ack(comm);
-        MPIX_Comm_failure_get_acked(comm, &group_f);
+        // MPIX_Comm_failure_ack(comm);
+        // MPIX_Comm_failure_get_acked(comm, &group_f);
         MPI_Group_size(group_f, &nf);
         MPI_Error_string(err, errstr, &len);
         printf("Rank %d / %d : Notified of error %s. %d found dead :(", rank, size, errstr, nf);
+        //nf - rank of dead process
 
         ranks_gf = (int *)malloc(nf * sizeof(int));
         ranks_gc = (int *)malloc(nf * sizeof(int));
@@ -79,7 +80,13 @@ namespace parallel_integral {
     Limits::Limits(std::ifstream& input_file) {
         input_file.open("input.txt");
         input_file >> left >> right;
+        // std::cout << "LEFT=" << left << " " << "RIGHT=" << right;
         input_file.close();
+    }
+    void write_backup(int process_id, double result, double start, double finish) {
+        std::ofstream file("res" + std::to_string(process_id) + ".txt");
+        file << result << " " << start << " " <<  finish;
+        file.close();
     }
 
     ResultAndTime ComputeIntegral(int *argc_ptr, char ***argv_ptr) {
@@ -128,6 +135,7 @@ namespace parallel_integral {
             unsigned long remains = accuracy_parameters.parts % mpi_statistics.amount_of_processes;
             unsigned long start = mpi_statistics.process_id * for_work;
             unsigned long finish = start + for_work;// + mpi_statistics.process_id == 0 ? remains : 0;
+            write_backup(mpi_statistics.process_id, -1, start, finish); // super initial backup
             //std::cout << "ID:" << mpi_statistics.process_id <<" start:" << start << " finish:" << finish << std::endl;
             #pragma omp parallel shared(accuracy_parameters) reduction(+:result_in_process)
             {
@@ -137,15 +145,37 @@ namespace parallel_integral {
                     result_in_process += accuracy_parameters.step * Function(x + accuracy_parameters.step / 2);
                 }
             }
-            if (mpi_statistics.process_id != 0){
+            if (mpi_statistics.process_id != 0) {
                 if (mpi_statistics.process_id == 1) {
-                    raise(SIGKILL);
+                    //raise(SIGKILL);
                 }
                 //std::cout << "PROCESS: "<<mpi_statistics.process_id << "sending result: " <<result_in_process<< " to master" << std::endl;
+                write_backup(mpi_statistics.process_id, result_in_process, start, finish);
                 MPI_Send(&result_in_process, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD); //sending result to master
             }
             if (mpi_statistics.process_id == 0) {
                 result += result_in_process; //added masters part
+                 //read start and finish of files
+                for (int c = 1; c < mpi_statistics.amount_of_processes; ++c){
+                    std::ifstream bp("res" + std::to_string(c) + ".txt");
+                    double re;
+                    unsigned long l, r;
+                    bp >> re;
+                    bp >> l;
+                    bp >> r;
+                    double saved_res = 0;
+                    if (re == -1) { //than there were only initial bp        
+                        #pragma omp parallel shared(accuracy_parameters) reduction(+:saved_res)
+                        {
+                            #pragma omp for
+                            for (i = l; i < r; ++i) {
+                                double x = accuracy_parameters.limits.left + i * accuracy_parameters.step;
+                                saved_res += accuracy_parameters.step * Function(x + accuracy_parameters.step / 2);
+                            }
+                        }
+                        result += saved_res;
+                    }
+                }
                 int count = 0;
                 //std::cout << "PROCESS: "<<mpi_statistics.process_id << "is waiting for others finally" << std::endl; //here was infinite loop last time
                 for (int c = 1; c < mpi_statistics.amount_of_processes; ++c){
